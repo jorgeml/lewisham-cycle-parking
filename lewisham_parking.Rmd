@@ -1,6 +1,6 @@
 ---
 #title: "Lewisham Cycle Parking"
-#author: "A concerned third party"
+#author: "Jorge Martínez López <jorgeml@jorgeml.me>"
 #date: "09/07/2020"
 license: GPLv3
 output: 
@@ -23,7 +23,7 @@ library("leaflet")
 library("leaflet.extras")
 ```
 
-```{r, main, include=FALSE}
+```{r, main, include=FALSE, warning=FALSE}
 
 boundary_box <-
   getbb ('London Borough of Lewisham', format_out = 'polygon')
@@ -100,7 +100,7 @@ cycleway <- opq(bbox = boundary_box) %>%
 
 ```
 
-```{r, map, echo=FALSE, message=FALSE}
+```{r, map, echo=FALSE, message=FALSE, warning=FALSE}
 
 getColor <- function(parkingpoints) {
   sapply(parkingpoints$covered, function(covered) {
