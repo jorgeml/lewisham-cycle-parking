@@ -1,14 +1,15 @@
 ---
-#title: "Lewisham Cycle Parking"
-#author: "Jorge Martínez López <jorgeml@jorgeml.me>"
+title: "Lewisham Cycle Parking"
+author: "Jorge Martínez López <jorgeml@jorgeml.me>"
 #date: "09/07/2020"
 license: GPLv3
 output: 
-  html_document:
-    toc: false
-    toc_float:
-      collapsed: true
-      smooth_scroll: true
+  #html_document:
+  #  toc: false
+  #  toc_float:
+  #    collapsed: true
+  #    smooth_scroll: true
+  html_fragment:
 mainfont: Open Sans
 ---
 
@@ -139,7 +140,7 @@ parking$osm_points %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
   addAwesomeMarkers(
     icon = icons,
-    label = parking$osm_points$label,
+    #label = parking$osm_points$label,
     popup = parking$osm_points$popup,
   ) %>%
   addPolylines(data = cycleway$osm_lines, opacity = 0.2) %>%
