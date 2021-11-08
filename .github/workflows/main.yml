@@ -37,7 +37,7 @@ jobs:
         with:
           branch: 'gh-pages'
           folder: 'build'
-          target-folder: ${{ github.ref }}
+          target-folder: ${{ github.ref_name }}
 
 #      - name: Commit results
 #        run: |
