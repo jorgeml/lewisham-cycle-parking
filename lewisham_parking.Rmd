@@ -1,16 +1,14 @@
 ---
-title: "Lewisham Cycle Parking"
-author: "Jorge Martínez López <jorgeml@jorgeml.me>"
+#title: "Lewisham Cycle Parking"
+#author: "Jorge Martínez López <jorgeml@jorgeml.me>"
 #date: "09/07/2020"
 license: GPLv3
 output: 
-  #html_document:
-  #  toc: false
-  #  toc_float:
-  #    collapsed: true
-  #    smooth_scroll: true
-  html_fragment:
-mainfont: Open Sans
+  html_document:
+    theme: null
+    highlight: null
+    self_contained: true
+    toc: false
 ---
 
 ```{r, setup, include=FALSE}
