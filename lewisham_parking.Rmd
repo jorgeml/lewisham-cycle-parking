@@ -31,7 +31,8 @@ parking <- opq(bbox = boundary_box) %>%
   add_osm_feature(key = 'amenity', value = 'bicycle_parking') %>%
   add_osm_feature (key = "access", value = "!private") %>%
   osmdata_sf () %>%
-  trim_osmdata (boundary_box)
+  trim_osmdata (boundary_box) %>%
+  unique_osmdata()
 
 parking$osm_points <- parking$osm_points %>%
   dplyr::mutate(label = paste0(
