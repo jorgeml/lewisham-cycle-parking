@@ -30,13 +30,15 @@ jobs:
       
       - name: Render Rmarkdown files
         run: |
-          Rscript -e 'rmarkdown::render("lewisham_parking.Rmd")'
+          Rscript -e 'rmarkdown::render("lewisham_parking.Rmd", output_dir="./build")'
 
       - name: Deploy to GitHub pages 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.4
         with:
-          branch: gh-pages
-          folder: .
+          branch: 'gh-pages'
+          folder: 'build'
+          target-folder: $GITHUB_REF_NAME
+          commit-message: 'Deploying to Github Pages'
 
 #      - name: Commit results
 #        run: |
