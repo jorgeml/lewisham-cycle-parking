@@ -37,7 +37,7 @@ jobs:
         with:
           branch: 'gh-pages'
           folder: 'build'
-          target-folder: $GITHUB_REF_NAME
+          target-folder: 'main'
           commit-message: 'Deploying to Github Pages'
 
 #      - name: Commit results
