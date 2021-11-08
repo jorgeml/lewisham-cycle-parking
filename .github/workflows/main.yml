@@ -4,7 +4,8 @@ on:
   push:
     paths: ['**.Rmd']
   workflow_dispatch:
-
+  schedule:
+    - cron:  '10 1 * * *'
 
 name: render-rmarkdown
 
