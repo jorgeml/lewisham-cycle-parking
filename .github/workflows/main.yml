@@ -31,7 +31,8 @@ jobs:
       
       - name: Render Rmarkdown files
         run: |
-          Rscript -e 'rmarkdown::render("lewisham_parking.Rmd", output_dir="./build")'
+          RMD_PATH=($(ls | grep '[.]Rmd$'))
+          Rscript -e 'for (f in commandArgs(TRUE)) if (file.exists(f)) rmarkdown::render(f, output_dir="./build")' ${RMD_PATH[*]}
 
       - name: Deploy to GitHub pages 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.4
