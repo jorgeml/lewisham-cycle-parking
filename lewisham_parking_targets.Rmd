@@ -1,0 +1,161 @@
+---
+title: "Lewisham Cycle Parking Targets"
+author: "Jorge Martínez López (for Lewisham Cyclists)"
+license: GPLv3
+output: 
+  html_document:
+    theme: cosmo
+    toc: false
+---
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library("dplyr")
+library("osmdata")
+library("htmltools")
+library("sf")
+library("leaflet")
+library("leaflet.extras")
+```
+
+```{r, functions, echo=FALSE, message=FALSE, warning=FALSE}
+
+boundary_box <-
+  getbb ('London Borough of Lewisham', format_out = 'polygon')
+
+makePopup <- function(parkingPoints){
+  parkingPoints <- parkingPoints %>%
+  dplyr::mutate(
+    popup = paste0(
+      "<b>Cycle Parking</b><br/>",
+      "Type: ",
+      htmlEscape(parkingPoints$bicycle_parking),
+      "<br/>",
+      "Capacity: ",
+      htmlEscape(parkingPoints$capacity),
+      "<br/>",
+      "Covered: ",
+      htmlEscape(parkingPoints$covered),
+      "<br/>",
+      "Access: ",
+      htmlEscape(parkingPoints$access),
+      "<br/>",
+      "Supervised: ",
+      htmlEscape(parkingPoints$supervised),
+      "<br/>",
+      "Description: ",
+      htmlEscape(parkingPoints$description),
+      "<br/>",
+      "<a href=\"https://www.openstreetmap.org/node/",
+      htmlEscape(parkingPoints$osm_id),
+      "\"><b>View</b> in OpenStreetMap</a>",
+      "<br/>",
+      "<a href=\"https://www.openstreetmap.org/edit?node=",
+      htmlEscape(parkingPoints$osm_id),
+      "\"><b>Edit</b> in OpenStreetMap</a>"
+    )
+  )
+  return(parkingPoints)
+}
+
+getPointMap <- function(parkingPoints){
+  
+  icons <- awesomeIcons(
+  icon = "bicycle",
+  iconColor = "lightgray",
+  library = "fa",
+  markerColor = "red",
+  spin = FALSE,
+  extraClasses = NULL,
+  squareMarker = TRUE,
+  iconRotate = 0,
+  fontFamily = "sans",
+ )
+  
+  map <- parkingPoints %>%
+  leaflet(height = "800px", width = "100%") %>%
+  setView(lat = 51.4536,
+          lng = -0.0180,
+          zoom = 13) %>%
+  addProviderTiles(providers$CartoDB.Positron) %>%
+  addAwesomeMarkers(
+    icon = icons,
+    popup = parkingPoints$popup,
+  ) %>%
+  leaflet.extras::addResetMapButton() %>%
+  leaflet.extras::addControlGPS(
+    options = gpsOptions(
+      position = "topright",
+      activate = FALSE,
+      autoCenter = TRUE,
+      maxZoom = NULL,
+      setView = TRUE
+    )
+  )
+  return(map)
+}
+
+parking <- opq(bbox = boundary_box) %>%
+  add_osm_feature(key = 'amenity', value = 'bicycle_parking') %>%
+  add_osm_feature (key = "access", value = "!private") %>%
+  osmdata_sf () %>%
+  trim_osmdata (boundary_box) %>%
+  unique_osmdata()
+
+```
+
+## Introduction
+
+This page contains a few maps showing cycle parkings in Lewisham with missing or incorrect information.
+
+For guidance on how to provide and edit cycle parking information please visit:
+
+* <https://wiki.openstreetmap.org/wiki/Tag:amenity%3Dbicycle_parking>
+* <https://wiki.openstreetmap.org/wiki/Key:bicycle_parking>
+
+## The maps {.tabset .tabset-fade .tabset-pills}
+
+### Capacity
+
+The following cycle parking points do not have capacity information.
+
+Edit them on Open Street Map and add the tag "capacity".
+
+```{r echo=FALSE, capacity, warning=FALSE}
+
+parking$osm_points [which (is.na(parking$osm_points$capacity)),] %>%
+  makePopup() %>%
+  getPointMap()
+
+```
+
+### Covered
+
+```{r echo=FALSE, covered, warning=FALSE}
+
+parking$osm_points [which (is.na(parking$osm_points$covered)),] %>%
+  makePopup() %>%
+  getPointMap()
+
+```
+
+### Lit
+
+```{r echo=FALSE, lit, warning=FALSE}
+
+parking$osm_points [which (is.na(parking$osm_points$lit)),] %>%
+  makePopup() %>%
+  getPointMap()
+
+```
+
+### Supervised
+
+```{r echo=FALSE, supervised, warning=FALSE}
+
+parking$osm_points [which (is.na(parking$osm_points$supervised)),] %>%
+  makePopup() %>%
+  getPointMap()
+
+```
