@@ -34,73 +34,44 @@ parking <- opq(bbox = boundary_box) %>%
   trim_osmdata (boundary_box) %>%
   unique_osmdata()
 
-parking$osm_points <- parking$osm_points %>%
+makeLabel <- function(points) {
+points <- points %>%
   dplyr::mutate(label = paste0(
-    htmlEscape(parking$osm_points$bicycle_parking),
+    htmlEscape(points$bicycle_parking),
     " (",
-    htmlEscape(parking$osm_points$capacity),
+    htmlEscape(points$capacity),
     ")"
   ))
+  return(points)
+}
 
-parking$osm_points <- parking$osm_points %>%
-  dplyr::mutate(
+makePopup <- function(points) {
+  points <- points %>%
+    dplyr::mutate(
     popup = paste0(
       "<b>Cycle Parking</b><br/>",
       "Type: ",
-      htmlEscape(parking$osm_points$bicycle_parking),
+      htmlEscape(points$bicycle_parking),
       "<br/>",
       "Capacity: ",
-      htmlEscape(parking$osm_points$capacity),
+      htmlEscape(points$capacity),
       "<br/>",
       "Covered: ",
-      htmlEscape(parking$osm_points$covered),
+      htmlEscape(points$covered),
       "<br/>",
       "Access: ",
-      htmlEscape(parking$osm_points$access),
-      "<br/>",
-      "Supervised: ",
-      htmlEscape(parking$osm_points$supervised),
+      htmlEscape(points$access),
       "<br/>",
       "Description: ",
-      htmlEscape(parking$osm_points$description)
-      
+      htmlEscape(points$description),      
+      "<br/>",
+      "<a href=\"https://www.openstreetmap.org/node/",
+      htmlEscape(points$osm_id),
+      "\"><b>View</b> in map</a>"
     )
   )
-
-cycleway <- opq(bbox = boundary_box) %>%
-  add_osm_feature(key = 'highway', value = 'cycleway') %>%
-  osmdata_sf() %>%
-  trim_osmdata (boundary_box)
-
-# cycleway$osm_lines <- cycleway$osm_lines %>%
-#   dplyr::mutate(label = paste0(htmlEscape(cycleway$osm_lines['name'])))
-# 
-# cycleway$osm_lines <- cycleway$osm_lines %>% 
-#   dplyr::mutate(popup = paste0(
-#     "<b>Cycleway</b><br/>",
-#        "Name: ",
-#        htmlEscape(cycleway$osm_lines$name),
-#        "<br/>",
-#        "Cycleway: ",
-#        htmlEscape(cycleway$osm_lines$cycleway),
-#        "<br/>",
-#        "Lit: ",
-#        htmlEscape(cycleway$osm_lines$lit),
-#        "<br/>",
-#        "Segregated: ",
-#        htmlEscape(cycleway$osm_lines$segregated),
-#        "<br/>",
-#        "Surface: ",
-#        htmlEscape(cycleway$osm_lines$surface),
-#       "<br/>",
-#        "Description: ",
-#        htmlEscape(cycleway$osm_lines$description)
-#     
-#      ) )
-
-```
-
-```{r, map, echo=FALSE, message=FALSE, warning=FALSE}
+  return(points)
+}
 
 getColor <- function(parkingpoints) {
   sapply(parkingpoints$covered, function(covered) {
@@ -118,30 +89,54 @@ getColor <- function(parkingpoints) {
   })
 }
 
-icons <- awesomeIcons(
-  icon = "bicycle",
-  iconColor = "lightgray",
-  library = "fa",
-  markerColor = as.character(getColor(parking$osm_points)),
-  spin = FALSE,
-  extraClasses = NULL,
-  squareMarker = TRUE,
-  iconRotate = 0,
-  fontFamily = "sans",
-  text = parking$osm_points$capacity
-)
 
-parking$osm_points %>%
+makeIcons <- function(points) {
+  icons <- awesomeIcons(
+    icon = "bicycle",
+    iconColor = "lightgray",
+    library = "fa",
+    markerColor = as.character(getColor(points)),
+    spin = FALSE,
+    extraClasses = NULL,
+    squareMarker = TRUE,
+    iconRotate = 0,
+    fontFamily = "sans",
+    text = points$capacity
+  )
+  return(icons)
+}
+
+cycleway <- opq(bbox = boundary_box) %>%
+  add_osm_feature(key = 'highway', value = 'cycleway') %>%
+  osmdata_sf() %>%
+  trim_osmdata (boundary_box)
+
+```
+
+```{r, map, echo=FALSE, message=FALSE, warning=FALSE}
+
+parkingPoints <- parking$osm_points %>%
+  makePopup()
+pointIcons <- makeIcons(parking$osm_points)
+
+parkingPolygons <- parking$osm_polygons %>%
+  st_transform(crs = 32632) %>%
+  st_centroid() %>%
+  st_transform(crs = 4326) %>%
+  makePopup()
+  polygonIcons <- makeIcons(parkingPolygons)
+
+parkingPoints %>%
   leaflet(height = "800px", width = "100%") %>%
   setView(lat = 51.4536,
           lng = -0.0180,
           zoom = 13) %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
-  addAwesomeMarkers(
-    icon = icons,
-    #label = parking$osm_points$label,
-    popup = parking$osm_points$popup,
-  ) %>%
+  addAwesomeMarkers(icon = pointIcons,
+                    popup = parkingPoints$popup,) %>%
+  addAwesomeMarkers(data = parkingPolygons,
+                    icon = polygonIcons,
+                    popup = parkingPolygons$popup,) %>%
   addPolylines(data = cycleway$osm_lines, opacity = 0.2) %>%
   leaflet.extras::addResetMapButton() %>%
   leaflet.extras::addControlGPS(
