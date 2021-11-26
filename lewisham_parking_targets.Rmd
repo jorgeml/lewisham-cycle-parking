@@ -24,75 +24,69 @@ library("leaflet.extras")
 boundary_box <-
   getbb ('London Borough of Lewisham', format_out = 'polygon')
 
-makePopup <- function(parkingPoints){
+makePopup <- function(parkingPoints) {
   parkingPoints <- parkingPoints %>%
-  dplyr::mutate(
-    popup = paste0(
-      "<b>Cycle Parking</b><br/>",
-      "Type: ",
-      htmlEscape(parkingPoints$bicycle_parking),
-      "<br/>",
-      "Capacity: ",
-      htmlEscape(parkingPoints$capacity),
-      "<br/>",
-      "Covered: ",
-      htmlEscape(parkingPoints$covered),
-      "<br/>",
-      "Access: ",
-      htmlEscape(parkingPoints$access),
-      "<br/>",
-      "Supervised: ",
-      htmlEscape(parkingPoints$supervised),
-      "<br/>",
-      "Description: ",
-      htmlEscape(parkingPoints$description),
-      "<br/>",
-      "<a href=\"https://www.openstreetmap.org/node/",
-      htmlEscape(parkingPoints$osm_id),
-      "\"><b>View</b> in OpenStreetMap</a>",
-      "<br/>",
-      "<a href=\"https://www.openstreetmap.org/edit?node=",
-      htmlEscape(parkingPoints$osm_id),
-      "\"><b>Edit</b> in OpenStreetMap</a>"
+    dplyr::mutate(
+      popup = paste0(
+        "<b>Cycle Parking</b><br/>",
+        "Type: ",
+        htmlEscape(parkingPoints$bicycle_parking),
+        "<br/>",
+        "Capacity: ",
+        htmlEscape(parkingPoints$capacity),
+        "<br/>",
+        "Covered: ",
+        htmlEscape(parkingPoints$covered),
+        "<br/>",
+        "Access: ",
+        htmlEscape(parkingPoints$access),
+        "<br/>",
+        "Description: ",
+        htmlEscape(parkingPoints$description),
+        "<br/>",
+        "<a href=\"https://www.openstreetmap.org/node/",
+        htmlEscape(parkingPoints$osm_id),
+        "\"><b>View</b> in OpenStreetMap</a>",
+        "<br/>",
+        "<a href=\"https://www.openstreetmap.org/edit?node=",
+        htmlEscape(parkingPoints$osm_id),
+        "\"><b>Edit</b> in OpenStreetMap</a>"
+      )
     )
-  )
   return(parkingPoints)
 }
 
-getPointMap <- function(parkingPoints){
-  
+getPointMap <- function(parkingPoints) {
   icons <- awesomeIcons(
-  icon = "bicycle",
-  iconColor = "lightgray",
-  library = "fa",
-  markerColor = "red",
-  spin = FALSE,
-  extraClasses = NULL,
-  squareMarker = TRUE,
-  iconRotate = 0,
-  fontFamily = "sans",
- )
+    icon = "bicycle",
+    iconColor = "lightgray",
+    library = "fa",
+    markerColor = "red",
+    spin = FALSE,
+    extraClasses = NULL,
+    squareMarker = FALSE,
+    iconRotate = 0,
+    fontFamily = "sans",
+  )
   
   map <- parkingPoints %>%
-  leaflet(height = "800px", width = "100%") %>%
-  setView(lat = 51.4536,
-          lng = -0.0180,
-          zoom = 13) %>%
-  addProviderTiles(providers$CartoDB.Positron) %>%
-  addAwesomeMarkers(
-    icon = icons,
-    popup = parkingPoints$popup,
-  ) %>%
-  leaflet.extras::addResetMapButton() %>%
-  leaflet.extras::addControlGPS(
-    options = gpsOptions(
-      position = "topright",
-      activate = FALSE,
-      autoCenter = TRUE,
-      maxZoom = NULL,
-      setView = TRUE
+    leaflet(height = "800px", width = "100%") %>%
+    setView(lat = 51.4536,
+            lng = -0.0180,
+            zoom = 13) %>%
+    addProviderTiles(providers$CartoDB.Positron) %>%
+    addAwesomeMarkers(icon = icons,
+                      popup = parkingPoints$popup,) %>%
+    leaflet.extras::addResetMapButton() %>%
+    leaflet.extras::addControlGPS(
+      options = gpsOptions(
+        position = "topright",
+        activate = FALSE,
+        autoCenter = TRUE,
+        maxZoom = NULL,
+        setView = TRUE
+      )
     )
-  )
   return(map)
 }
 
@@ -114,47 +108,82 @@ For guidance on how to provide and edit cycle parking information please visit:
 * <https://wiki.openstreetmap.org/wiki/Tag:amenity%3Dbicycle_parking>
 * <https://wiki.openstreetmap.org/wiki/Key:bicycle_parking>
 
+This map updates every night, your edits in OpenStreetMap won't be instantly reflected here.
+
 ## The maps {.tabset .tabset-fade .tabset-pills}
 
 ### Capacity
 
-The following cycle parking points do not have capacity information.
+These cycle parking points do not have capacity information.
+You can also add information about cargo bike parking.
 
 Edit them on Open Street Map and add the tag "capacity".
 
+More information:
+
+* <https://wiki.openstreetmap.org/wiki/Key:capacity>
+* <https://wiki.openstreetmap.org/wiki/Key:cargo_bike>
+
 ```{r echo=FALSE, capacity, warning=FALSE}
 
-parking$osm_points [which (is.na(parking$osm_points$capacity)),] %>%
+parking$osm_points [which (is.na(parking$osm_points$capacity)), ] %>%
   makePopup() %>%
   getPointMap()
 
 ```
 
-### Covered
+### Cover
+
+These cycle parking points do not have cover information (protection from rain).
+
+Edit them on Open Street Map and add the tag "covered".
+
+More information:
+
+* <https://wiki.openstreetmap.org/wiki/Key:covered>
 
 ```{r echo=FALSE, covered, warning=FALSE}
 
-parking$osm_points [which (is.na(parking$osm_points$covered)),] %>%
+parking$osm_points [which (is.na(parking$osm_points$covered)), ] %>%
   makePopup() %>%
   getPointMap()
 
 ```
 
-### Lit
+### Access
 
-```{r echo=FALSE, lit, warning=FALSE}
+These cycle parking points do not have access information (public, customers, etc).
 
-parking$osm_points [which (is.na(parking$osm_points$lit)),] %>%
+Edit them on Open Street Map and add the tag "access".
+
+More information:
+
+* <https://wiki.openstreetmap.org/wiki/Key:access>
+
+```{r echo=FALSE, access, warning=FALSE}
+
+parking$osm_points [which (is.na(parking$osm_points$access)), ] %>%
   makePopup() %>%
   getPointMap()
 
 ```
 
-### Supervised
+### Polygons
 
-```{r echo=FALSE, supervised, warning=FALSE}
+These cycle parking spots are included in the map as polygons. While this is allowed, it might not be consistent if the parking is a group of stands or a small shed as opposed to a building or a cycle hub.
 
-parking$osm_points [which (is.na(parking$osm_points$supervised)),] %>%
+Please consider removing the polygon and using points instead.
+
+More information:
+
+* <https://wiki.openstreetmap.org/wiki/Tag:amenity%3Dbicycle_parking>
+
+```{r echo=FALSE, polygon, warning=FALSE}
+
+parking$osm_polygons %>%
+  st_transform(crs = 32632) %>%
+  st_centroid() %>%
+  st_transform(crs = 4326) %>%
   makePopup() %>%
   getPointMap()
 
