@@ -24,36 +24,40 @@ library("leaflet.extras")
 boundary_box <-
   getbb ('London Borough of Lewisham', format_out = 'polygon')
 
-makePopup <- function(parkingPoints) {
-  parkingPoints <- parkingPoints %>%
+makePopup <- function(points, osm_type) {
+  points <- points %>%
     dplyr::mutate(
       popup = paste0(
         "<b>Cycle Parking</b><br/>",
         "Type: ",
-        htmlEscape(parkingPoints$bicycle_parking),
+        htmlEscape(points$bicycle_parking),
         "<br/>",
         "Capacity: ",
-        htmlEscape(parkingPoints$capacity),
+        htmlEscape(points$capacity),
         "<br/>",
         "Covered: ",
-        htmlEscape(parkingPoints$covered),
+        htmlEscape(points$covered),
         "<br/>",
         "Access: ",
-        htmlEscape(parkingPoints$access),
+        htmlEscape(points$access),
         "<br/>",
         "Description: ",
-        htmlEscape(parkingPoints$description),
+        htmlEscape(points$description),
         "<br/>",
-        "<a href=\"https://www.openstreetmap.org/node/",
-        htmlEscape(parkingPoints$osm_id),
-        "\"><b>View</b> in OpenStreetMap</a>",
+        "<a href=\"https://www.openstreetmap.org/",
+        osm_type,
+        "/",
+        htmlEscape(points$osm_id),
+        "\"><b>View</b> in map</a>",
         "<br/>",
-        "<a href=\"https://www.openstreetmap.org/edit?node=",
-        htmlEscape(parkingPoints$osm_id),
+        "<a href=\"https://www.openstreetmap.org/edit?",
+        osm_type,
+        "=",
+        htmlEscape(points$osm_id),
         "\"><b>Edit</b> in OpenStreetMap</a>"
       )
     )
-  return(parkingPoints)
+  return(points)
 }
 
 getPointMap <- function(parkingPoints) {
@@ -127,7 +131,7 @@ More information:
 ```{r echo=FALSE, capacity, warning=FALSE}
 
 parking$osm_points [which (is.na(parking$osm_points$capacity)), ] %>%
-  makePopup() %>%
+  makePopup(osm_type="node") %>%
   getPointMap()
 
 ```
@@ -145,7 +149,7 @@ More information:
 ```{r echo=FALSE, covered, warning=FALSE}
 
 parking$osm_points [which (is.na(parking$osm_points$covered)), ] %>%
-  makePopup() %>%
+  makePopup(osm_type="node") %>%
   getPointMap()
 
 ```
@@ -163,7 +167,7 @@ More information:
 ```{r echo=FALSE, access, warning=FALSE}
 
 parking$osm_points [which (is.na(parking$osm_points$access)), ] %>%
-  makePopup() %>%
+  makePopup(osm_type="node") %>%
   getPointMap()
 
 ```
@@ -184,7 +188,7 @@ parking$osm_polygons %>%
   st_transform(crs = 32632) %>%
   st_centroid() %>%
   st_transform(crs = 4326) %>%
-  makePopup() %>%
+  makePopup(osm_type="way") %>%
   getPointMap()
 
 ```

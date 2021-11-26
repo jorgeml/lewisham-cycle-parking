@@ -45,7 +45,7 @@ points <- points %>%
   return(points)
 }
 
-makePopup <- function(points) {
+makePopup <- function(points,osm_type) {
   points <- points %>%
     dplyr::mutate(
     popup = paste0(
@@ -65,7 +65,9 @@ makePopup <- function(points) {
       "Description: ",
       htmlEscape(points$description),      
       "<br/>",
-      "<a href=\"https://www.openstreetmap.org/node/",
+      "<a href=\"https://www.openstreetmap.org/",
+      osm_type,
+      "/",
       htmlEscape(points$osm_id),
       "\"><b>View</b> in map</a>"
     )
@@ -116,14 +118,14 @@ cycleway <- opq(bbox = boundary_box) %>%
 ```{r, map, echo=FALSE, message=FALSE, warning=FALSE}
 
 parkingPoints <- parking$osm_points %>%
-  makePopup()
+  makePopup(osm_type = "node")
 pointIcons <- makeIcons(parking$osm_points)
 
 parkingPolygons <- parking$osm_polygons %>%
   st_transform(crs = 32632) %>%
   st_centroid() %>%
   st_transform(crs = 4326) %>%
-  makePopup()
+  makePopup(osm_type = "way")
   polygonIcons <- makeIcons(parkingPolygons)
 
 parkingPoints %>%
