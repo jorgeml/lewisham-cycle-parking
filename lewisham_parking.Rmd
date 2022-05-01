@@ -25,7 +25,7 @@ library("leaflet.extras")
 ```{r, main, include=FALSE, warning=FALSE}
 
 boundary_box <-
-  getbb ('London Borough of Lewisham', format_out = 'polygon')
+  getbb ('London Borough of Lewisham', format_out = 'sf_polygon')
 
 parking <- opq(bbox = boundary_box) %>%
   add_osm_feature(key = 'amenity', value = 'bicycle_parking') %>%
@@ -35,43 +35,43 @@ parking <- opq(bbox = boundary_box) %>%
   unique_osmdata()
 
 makeLabel <- function(points) {
-points <- points %>%
-  dplyr::mutate(label = paste0(
-    htmlEscape(points$bicycle_parking),
-    " (",
-    htmlEscape(points$capacity),
-    ")"
-  ))
+  points <- points %>%
+    dplyr::mutate(label = paste0(
+      htmlEscape(points$bicycle_parking),
+      " (",
+      htmlEscape(points$capacity),
+      ")"
+    ))
   return(points)
 }
 
-makePopup <- function(points,osm_type) {
+makePopup <- function(points, osm_type) {
   points <- points %>%
     dplyr::mutate(
-    popup = paste0(
-      "<b>Cycle Parking</b><br/>",
-      "Type: ",
-      htmlEscape(points$bicycle_parking),
-      "<br/>",
-      "Capacity: ",
-      htmlEscape(points$capacity),
-      "<br/>",
-      "Covered: ",
-      htmlEscape(points$covered),
-      "<br/>",
-      "Access: ",
-      htmlEscape(points$access),
-      "<br/>",
-      "Description: ",
-      htmlEscape(points$description),      
-      "<br/>",
-      "<a href=\"https://www.openstreetmap.org/",
-      osm_type,
-      "/",
-      htmlEscape(points$osm_id),
-      "\"><b>View</b> in map</a>"
+      popup = paste0(
+        "<b>Cycle Parking</b><br/>",
+        "Type: ",
+        htmlEscape(points$bicycle_parking),
+        "<br/>",
+        "Capacity: ",
+        htmlEscape(points$capacity),
+        "<br/>",
+        "Covered: ",
+        htmlEscape(points$covered),
+        "<br/>",
+        "Access: ",
+        htmlEscape(points$access),
+        "<br/>",
+        "Description: ",
+        htmlEscape(points$description),
+        "<br/>",
+        "<a href=\"https://www.openstreetmap.org/",
+        osm_type,
+        "/",
+        htmlEscape(points$osm_id),
+        "\"><b>View</b> in map</a>"
+      )
     )
-  )
   return(points)
 }
 
@@ -126,29 +126,27 @@ parkingPolygons <- parking$osm_polygons %>%
   st_centroid() %>%
   st_transform(crs = 4326) %>%
   makePopup(osm_type = "way")
-  polygonIcons <- makeIcons(parkingPolygons)
+polygonIcons <- makeIcons(parkingPolygons)
 
 parkingPoints %>%
   leaflet(height = "800px", width = "100%") %>%
-  setView(lat = 51.4536,
-          lng = -0.0180,
-          zoom = 13) %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
   addAwesomeMarkers(icon = pointIcons,
-                    popup = parkingPoints$popup,) %>%
+                    popup = parkingPoints$popup, ) %>%
   addAwesomeMarkers(data = parkingPolygons,
                     icon = polygonIcons,
-                    popup = parkingPolygons$popup,) %>%
+                    popup = parkingPolygons$popup,
+  ) %>%
   addPolylines(data = cycleway$osm_lines, opacity = 0.2) %>%
-  leaflet.extras::addResetMapButton() %>%
-  leaflet.extras::addControlGPS(
-    options = gpsOptions(
-      position = "topright",
-      activate = FALSE,
-      autoCenter = TRUE,
-      maxZoom = NULL,
-      setView = TRUE
-    )
-  )
+  leaflet.extras::addResetMapButton() #%>%
+#  leaflet.extras::addControlGPS(
+#    options = gpsOptions(
+#      position = "topright",
+#      activate = FALSE,
+#      autoCenter = TRUE,
+#      maxZoom = NULL,
+#      setView = TRUE
+#    )
+#  )
 
 ```

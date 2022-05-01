@@ -75,22 +75,10 @@ getPointMap <- function(parkingPoints) {
   
   map <- parkingPoints %>%
     leaflet(height = "800px", width = "100%") %>%
-    setView(lat = 51.4536,
-            lng = -0.0180,
-            zoom = 13) %>%
     addProviderTiles(providers$CartoDB.Positron) %>%
     addAwesomeMarkers(icon = icons,
-                      popup = parkingPoints$popup,) %>%
-    leaflet.extras::addResetMapButton() %>%
-    leaflet.extras::addControlGPS(
-      options = gpsOptions(
-        position = "topright",
-        activate = FALSE,
-        autoCenter = TRUE,
-        maxZoom = NULL,
-        setView = TRUE
-      )
-    )
+                      popup = parkingPoints$popup, ) %>%
+    leaflet.extras::addResetMapButton()
   return(map)
 }
 
