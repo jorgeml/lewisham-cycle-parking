@@ -1,0 +1,152 @@
+---
+#title: "Lewisham Cycle Parking"
+#author: "Jorge Martínez López <jorgeml@jorgeml.me>"
+#date: "09/07/2020"
+license: GPLv3
+output: 
+  html_document:
+    theme: null
+    highlight: null
+    self_contained: true
+    toc: false
+---
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library("dplyr")
+library("osmdata")
+library("htmltools")
+library("sf")
+library("leaflet")
+library("leaflet.extras")
+```
+
+```{r, main, include=FALSE, warning=FALSE}
+
+boundary_box <-
+  getbb ('Royal Borough of Greenwich', format_out = 'sf_polygon')
+
+parking <- opq(bbox = boundary_box) %>%
+  add_osm_feature(key = 'amenity', value = 'bicycle_parking') %>%
+  add_osm_feature (key = "access", value = "!private") %>%
+  osmdata_sf () %>%
+  trim_osmdata (boundary_box) %>%
+  unique_osmdata()
+
+makeLabel <- function(points) {
+  points <- points %>%
+    dplyr::mutate(label = paste0(
+      htmlEscape(points$bicycle_parking),
+      " (",
+      htmlEscape(points$capacity),
+      ")"
+    ))
+  return(points)
+}
+
+makePopup <- function(points, osm_type) {
+  points <- points %>%
+    dplyr::mutate(
+      popup = paste0(
+        "<b>Cycle Parking</b><br/>",
+        "Type: ",
+        htmlEscape(points$bicycle_parking),
+        "<br/>",
+        "Capacity: ",
+        htmlEscape(points$capacity),
+        "<br/>",
+        "Covered: ",
+        htmlEscape(points$covered),
+        "<br/>",
+        "Access: ",
+        htmlEscape(points$access),
+        "<br/>",
+        "Description: ",
+        htmlEscape(points$description),
+        "<br/>",
+        "<a href=\"https://www.openstreetmap.org/",
+        osm_type,
+        "/",
+        htmlEscape(points$osm_id),
+        "\"><b>View</b> in map</a>"
+      )
+    )
+  return(points)
+}
+
+getColor <- function(parkingpoints) {
+  sapply(parkingpoints$covered, function(covered) {
+    if (is.na(covered)) {
+      "darkred"
+    } else if (covered == "yes") {
+      "green"
+    } else if (covered == "partial") {
+      "orange"
+    } else if (covered == "no") {
+      "red"
+    } else {
+      "cadetblue"
+    }
+  })
+}
+
+
+makeIcons <- function(points) {
+  icons <- awesomeIcons(
+    icon = "bicycle",
+    iconColor = "lightgray",
+    library = "fa",
+    markerColor = as.character(getColor(points)),
+    spin = FALSE,
+    extraClasses = NULL,
+    squareMarker = TRUE,
+    iconRotate = 0,
+    fontFamily = "sans",
+    text = points$capacity
+  )
+  return(icons)
+}
+
+cycleway <- opq(bbox = boundary_box) %>%
+  add_osm_feature(key = 'highway', value = 'cycleway') %>%
+  osmdata_sf() %>%
+  trim_osmdata (boundary_box)
+
+```
+
+```{r, map, echo=FALSE, message=FALSE, warning=FALSE}
+
+parkingPoints <- parking$osm_points %>%
+  makePopup(osm_type = "node")
+pointIcons <- makeIcons(parking$osm_points)
+
+parkingPolygons <- parking$osm_polygons %>%
+  st_transform(crs = 32632) %>%
+  st_centroid() %>%
+  st_transform(crs = 4326) %>%
+  makePopup(osm_type = "way")
+polygonIcons <- makeIcons(parkingPolygons)
+
+parkingPoints %>%
+  leaflet(height = "800px", width = "100%") %>%
+  addProviderTiles(providers$CartoDB.Positron) %>%
+  addAwesomeMarkers(icon = pointIcons,
+                    popup = parkingPoints$popup, ) %>%
+  addAwesomeMarkers(data = parkingPolygons,
+                    icon = polygonIcons,
+                    popup = parkingPolygons$popup,
+  ) %>%
+  addPolylines(data = cycleway$osm_lines, opacity = 0.2) %>%
+  leaflet.extras::addResetMapButton() #%>%
+#  leaflet.extras::addControlGPS(
+#    options = gpsOptions(
+#      position = "topright",
+#      activate = FALSE,
+#      autoCenter = TRUE,
+#      maxZoom = NULL,
+#      setView = TRUE
+#    )
+#  )
+
+```
