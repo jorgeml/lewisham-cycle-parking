@@ -25,7 +25,7 @@ library("leaflet.extras")
 ```{r, main, include=FALSE, warning=FALSE}
 
 boundary_box <-
-  getbb ('London Borough of Lewisham', format_out = 'sf_polygon')
+  getbb ('London Borough of Lewisham', format_out = 'polygon')
 
 parking <- opq(bbox = boundary_box, timeout = 120) %>%
   add_osm_feature(key = 'amenity', value = 'bicycle_parking') %>%
