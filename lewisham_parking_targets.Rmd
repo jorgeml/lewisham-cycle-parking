@@ -82,7 +82,7 @@ getPointMap <- function(parkingPoints) {
   return(map)
 }
 
-parking <- opq(bbox = boundary_box) %>%
+parking <- opq(bbox = boundary_box, timeout = 120) %>%
   add_osm_feature(key = 'amenity', value = 'bicycle_parking') %>%
   add_osm_feature (key = "access", value = "!private") %>%
   osmdata_sf () %>%
