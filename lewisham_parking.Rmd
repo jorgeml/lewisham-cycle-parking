@@ -27,15 +27,15 @@ library("leaflet.extras")
 boundary_box <-
   getbb ('London Borough of Lewisham', format_out = 'polygon')
 
-parking <- opq(bbox = boundary_box, timeout = 120) %>%
-  add_osm_feature(key = 'amenity', value = 'bicycle_parking') %>%
-  add_osm_feature (key = "access", value = "!private") %>%
-  osmdata_sf () %>%
-  trim_osmdata (boundary_box) %>%
+parking <- opq(bbox = boundary_box, timeout = 120) |>
+  add_osm_feature(key = 'amenity', value = 'bicycle_parking') |>
+  add_osm_feature (key = "access", value = "!private") |>
+  osmdata_sf () |>
+  trim_osmdata (boundary_box) |>
   unique_osmdata()
 
 makeLabel <- function(points) {
-  points <- points %>%
+  points <- points |>
     dplyr::mutate(label = paste0(
       htmlEscape(points$bicycle_parking),
       " (",
@@ -46,7 +46,7 @@ makeLabel <- function(points) {
 }
 
 makePopup <- function(points, osm_type) {
-  points <- points %>%
+  points <- points |>
     dplyr::mutate(
       popup = paste0(
         "<b>Cycle Parking</b><br/>",
@@ -108,37 +108,37 @@ makeIcons <- function(points) {
   return(icons)
 }
 
-cycleway <- opq(bbox = boundary_box, timeout = 120) %>%
-  add_osm_feature(key = 'highway', value = 'cycleway') %>%
-  osmdata_sf() %>%
+cycleway <- opq(bbox = boundary_box, timeout = 120) |>
+  add_osm_feature(key = 'highway', value = 'cycleway') |>
+  osmdata_sf() |>
   trim_osmdata (boundary_box)
 
 ```
 
 ```{r, map, echo=FALSE, message=FALSE, warning=FALSE}
 
-parkingPoints <- parking$osm_points %>%
+parkingPoints <- parking$osm_points |>
   makePopup(osm_type = "node")
 pointIcons <- makeIcons(parking$osm_points)
 
-parkingPolygons <- parking$osm_polygons %>%
-  st_transform(crs = 32632) %>%
-  st_centroid() %>%
-  st_transform(crs = 4326) %>%
+parkingPolygons <- parking$osm_polygons |>
+  st_transform(crs = 32632) |>
+  st_centroid() |>
+  st_transform(crs = 4326) |>
   makePopup(osm_type = "way")
 polygonIcons <- makeIcons(parkingPolygons)
 
-parkingPoints %>%
-  leaflet(height = "800px", width = "100%") %>%
-  addProviderTiles(providers$CartoDB.Positron) %>%
+parkingPoints |>
+  leaflet(height = "800px", width = "100%") |>
+  addProviderTiles(providers$CartoDB.Positron) |>
   addAwesomeMarkers(icon = pointIcons,
-                    popup = parkingPoints$popup, ) %>%
+                    popup = parkingPoints$popup, ) |>
   addAwesomeMarkers(data = parkingPolygons,
                     icon = polygonIcons,
                     popup = parkingPolygons$popup,
-  ) %>%
-  addPolylines(data = cycleway$osm_lines, opacity = 0.2) %>%
-  leaflet.extras::addResetMapButton() #%>%
+  ) |>
+  addPolylines(data = cycleway$osm_lines, opacity = 0.2) |>
+  leaflet.extras::addResetMapButton() #|>
 #  leaflet.extras::addControlGPS(
 #    options = gpsOptions(
 #      position = "topright",
