@@ -18,7 +18,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt update
-          sudo apt install -y cmake pandoc libcurl4-openssl-dev gdal-bin libgdal-dev libabsl-dev libsqlite3-dev libgeos-dev libudunits2-dev 
+          sudo apt install -y cmake pandoc libcurl4-openssl-dev gdal-bin libgdal-dev libabsl-dev libsqlite3-dev libgeos-dev libudunits2-dev libuv1-dev
 
       - name: Checkout repo
         uses: actions/checkout@v5
